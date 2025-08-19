@@ -1,6 +1,6 @@
 import numpy as np
 import numpy.linalg as lin
-import meshpy.triangle as triangle
+import meshpy.triangle as triangle # type: ignore
 import math
 import pathlib
 
@@ -164,7 +164,7 @@ def animate_on_circle(iterations: int, c: float, num_triangles: int, dt: float, 
     print('populating matrices...\n')
     
     # number of elements
-    N = len(triangles)
+    # N = len(triangles)
 
     # number of points
     n = len(vertices)
@@ -261,7 +261,7 @@ def animate_on_circle(iterations: int, c: float, num_triangles: int, dt: float, 
         save_dir = pathlib.Path(dir)
         save_dir.mkdir(exist_ok=True)
 
-        writer=ani.FFMpegWriter(bitrate=5000, fps=fps)
+        writer=ani.FFMpegWriter(bitrate=5000, fps=int(fps))
         anim.save(save_dir / filename, writer=writer)
         print(f'saving animation to {save_dir / filename}')
 

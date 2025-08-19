@@ -30,7 +30,7 @@ def circle(func: arb_circle_func = 'e - exp(x**2 + y**2)',
     
     try:
         user_func = parse_circle_func(func)
-    except:
+    except Exception:
         raise typer.Exit(1)
     
     print('all working good')
@@ -44,7 +44,7 @@ def line(func: arb_line_func = 'sin(2*pi*x)',
     
     try:
         user_func = parse_line_func(func)
-    except:
+    except Exception:
         raise typer.Exit(1)
     
     print('all working good')

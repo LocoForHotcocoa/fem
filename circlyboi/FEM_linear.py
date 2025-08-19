@@ -83,8 +83,8 @@ def animate_on_line(iterations: int, c: float, num_elements: int, dt: float, dir
     # Time coefficient matrix
     T = np.zeros((n, n))
 
-    T[0, 0] = 1; # Left boundary
-    T[N, N] = 1; # Right boundary
+    T[0, 0] = 1 # Left boundary
+    T[N, N] = 1 # Right boundary
 
     for i in range(1, N):
         for j in range(0, N+1):
@@ -129,7 +129,7 @@ def animate_on_line(iterations: int, c: float, num_elements: int, dt: float, dir
     # calculating all values
     data = []
     data.append(u)
-    a = 0
+    # a = 0
     for i in range(0, iterations):
         (uNew, uDerNew) = iteration(u, uDer)
         u = uNew
@@ -163,7 +163,7 @@ def animate_on_line(iterations: int, c: float, num_elements: int, dt: float, dir
         save_dir = pathlib.Path(dir)
         save_dir.mkdir(exist_ok=True)
         
-        writer=ani.FFMpegWriter(bitrate=5000, fps=fps)
+        writer=ani.FFMpegWriter(bitrate=5000, fps=int(fps))
         anim.save(dir + '/' + filename, writer=writer)
         print(f'saving animation to {dir}/{filename}')
 

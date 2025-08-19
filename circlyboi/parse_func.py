@@ -1,5 +1,6 @@
-import numexpr as ne
+import numexpr as ne # type: ignore
 import numpy as np
+from typing import Callable
 
 """
 This is the best I could get from the internet. There were other options but they seemed unsafe.
@@ -27,10 +28,10 @@ def is_zero_on_boundary(func) -> bool:
         
     return True  # If all points on the circle are zero, return True
 
-
-def parse_circle_func(raw_func: str):
+def parse_circle_func(raw_func: str) -> Callable[[float, float], float]:
     try:
-        func = lambda x, y: ne.evaluate(raw_func, local_dict={**safe_locals, "x": x, "y": y})
+        def func(x: float, y: float) -> float:
+            return ne.evaluate(raw_func, local_dict={**safe_locals, "x": x, "y": y})
         func(0,0) # test validity of function (check for syntax errors, etc.)
         # if not is_zero_on_boundary(func): # test if zero on boundary
         #     raise InvalidBoundary
@@ -40,27 +41,29 @@ def parse_circle_func(raw_func: str):
         print('function is not valid, please try again.')
         raise e
 
-def parse_line_func(raw_func: str):
-    try:
-        func = lambda x: ne.evaluate(raw_func, local_dict={**safe_locals, "x":x})
-        func(0)
 
+def parse_line_func(raw_func: str) -> Callable[[float], float]:
+    try:
+        def func(x: float) -> float:
+            return ne.evaluate(raw_func, local_dict={**safe_locals, "x":x})
+        
+        func(0)
         return func
     except Exception as e:
         print(f'exception raised: {e}')
         print('function is not valid, please try again.')
         raise e
-    
+
 
 if __name__=='__main__':
     while True:
         raw_func = input('please enter a function of x and y:\n')
-        func = parse_circle_func(raw_func)
-        if func:
-            print(func(1,1))
+        circle_func = parse_circle_func(raw_func)
+        if circle_func is not None:
+            print(circle_func(1,1))
         
         raw_func = input('please enter a function of x:\n')
-        func = parse_line_func(raw_func)
-        if func:
-            print(func(1))
+        line_func = parse_line_func(raw_func)
+        if line_func is not None:
+            print(line_func(1))
 
