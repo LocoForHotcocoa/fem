@@ -11,7 +11,7 @@ reference paper:
 - *python 3.10 or higher is required.*
 - *if you want to save animations with `--save` flag, the software **`ffmpeg`** is required and must be in system path.*
     - *if on mac, just download with homebrew: `brew install ffmpeg`*
-- this project is managed with the (uv)[https://docs.astral.sh/uv/guides/install-python/] Python package manager, which is the intended way to install this package.
+- this project is managed with the [uv](https://docs.astral.sh/uv/guides/install-python/) Python package manager, which is the intended way to install this package.
 1. clone repo:
 ```shell
 git clone git@github.com:LocoForHotcocoa/fem.git
