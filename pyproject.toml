@@ -24,6 +24,8 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "commitizen>=4.8.3",
+    "mypy>=1.17.1",
+    "ruff>=0.12.9",
 ]
 
 [project.scripts]
@@ -46,8 +48,3 @@ update_changelog_on_bump = true
 
 [tool.uv.sources]
 circlyboi = { workspace = true }
-
-[dependency-groups]
-dev = [
-    "commitizen>=4.8.3",
-]
