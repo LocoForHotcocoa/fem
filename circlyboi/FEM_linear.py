@@ -6,8 +6,10 @@ import pathlib
 import matplotlib.pyplot as plt
 import matplotlib.animation as ani
 
-def animate_on_line(iterations: int, c: float, num_elements: int, dt: float, dir: str, show: bool, func) -> None:
 
+def animate_on_line(
+    iterations: int, c: float, num_elements: int, dt: float, dir: str, show: bool, func
+) -> None:
     # Amount of elements
     N = num_elements
 
@@ -15,7 +17,7 @@ def animate_on_line(iterations: int, c: float, num_elements: int, dt: float, dir
     n = N + 1
 
     # Element size
-    h = 1.0/N
+    h = 1.0 / N
 
     """    
     calculating FPS and skipped frames:
@@ -40,21 +42,21 @@ def animate_on_line(iterations: int, c: float, num_elements: int, dt: float, dir
     """
 
     fps_target = 30
-    step_size = math.ceil(1.0/(dt*fps_target))
-    fps = 1.0/(dt*step_size)
+    step_size = math.ceil(1.0 / (dt * fps_target))
+    fps = 1.0 / (dt * step_size)
 
     num_frames = math.floor(iterations / step_size)
     total_time = num_frames / fps
-    print(f'total time is: {total_time:.2f} seconds')
+    print(f"total time is: {total_time:.2f} seconds")
     # filename to save animation
-    filename = f'FEM_linear_{num_elements}_i_{iterations}_dt_{dt}_c_{c}.mp4' # animation file name
+    filename = f"FEM_linear_{num_elements}_i_{iterations}_dt_{dt}_c_{c}.mp4"  # animation file name
 
     ## NOTICE ---------------------------------------------------------------------------------- ##
-    
+
     # much if the math is taken from the paper:
     #     - https://studenttheses.uu.nl/bitstream/handle/20.500.12932/29861/thesis.pdf?sequence=2
-    # and much of the code in this section is taken from (or at the very least inspired by) 
-    # this repository: 
+    # and much of the code in this section is taken from (or at the very least inspired by)
+    # this repository:
     #     - https://github.com/jeverink/BachelorsThesis/
     # The original MIT license applies to this code
 
@@ -83,33 +85,32 @@ def animate_on_line(iterations: int, c: float, num_elements: int, dt: float, dir
     # Time coefficient matrix
     T = np.zeros((n, n))
 
-    T[0, 0] = 1 # Left boundary
-    T[N, N] = 1 # Right boundary
+    T[0, 0] = 1  # Left boundary
+    T[N, N] = 1  # Right boundary
 
     for i in range(1, N):
-        for j in range(0, N+1):
-            if(i==j):
-                T[i, j] = (2.0/3.0)*h
-            if(abs(i-j) == 1):
-                T[i, j] = (1.0/6.0)*h
+        for j in range(0, N + 1):
+            if i == j:
+                T[i, j] = (2.0 / 3.0) * h
+            if abs(i - j) == 1:
+                T[i, j] = (1.0 / 6.0) * h
 
     # Space coefficient matrix
     S = np.zeros((n, n))
 
     for i in range(1, N):
-        for j in range(0, N+1):
-            if(i==j):
-                S[i, j] = (2.0/h)
-            if(abs(i-j)== 1):
-                S[i, j] = -(1.0/h)
-
+        for j in range(0, N + 1):
+            if i == j:
+                S[i, j] = 2.0 / h
+            if abs(i - j) == 1:
+                S[i, j] = -(1.0 / h)
 
     # A single time step from U(t) -> U(t+dt) and U'(t) -> U'(t+dt)
     def iteration(v, vDer):
-        vNew = v + dt*vDer
-        q = -c*c*S@v
+        vNew = v + dt * vDer
+        q = -c * c * S @ v
         r = lin.solve(T, q)
-        vDerNew = vDer + dt*r
+        vDerNew = vDer + dt * r
         return (vNew, vDerNew)
 
     # The real solution
@@ -122,9 +123,8 @@ def animate_on_line(iterations: int, c: float, num_elements: int, dt: float, dir
 
     # use user defined function
     for i in range(0, n):
-        x = i*h
+        x = i * h
         u[i] = func(x)
-        
 
     # calculating all values
     data = []
@@ -137,21 +137,23 @@ def animate_on_line(iterations: int, c: float, num_elements: int, dt: float, dir
         if i % step_size == 0:
             data.append(u)
 
-    spacing = np.linspace(0.0, 1.0, n) # for FEM solution
+    spacing = np.linspace(0.0, 1.0, n)  # for FEM solution
 
     ## animation ------------------------------------------------------------------------------- ##
 
     # First set up the figure, the axis, and the plot element we want to animate
     fig = plt.figure()
     ax = plt.axes(xlim=(0, 1), ylim=(-1.7, 1.7))
-    line, = ax.plot([], [], lw=2)
+    (line,) = ax.plot([], [], lw=2)
 
     # animation function.  This is called sequentially
     def animate(i):
         line.set_data(spacing, data[i])
 
     # call the animator.  blit=True means only re-draw the parts that have changed.
-    anim = ani.FuncAnimation(fig, animate, frames=num_frames, interval=(1.0/fps)*1000)
+    anim = ani.FuncAnimation(
+        fig, animate, frames=num_frames, interval=(1.0 / fps) * 1000
+    )
     # print(iterations)
     # print(len(data))
     # print(a)
@@ -162,8 +164,7 @@ def animate_on_line(iterations: int, c: float, num_elements: int, dt: float, dir
     else:
         save_dir = pathlib.Path(dir)
         save_dir.mkdir(exist_ok=True)
-        
-        writer=ani.FFMpegWriter(bitrate=5000, fps=int(fps))
-        anim.save(dir + '/' + filename, writer=writer)
-        print(f'saving animation to {dir}/{filename}')
 
+        writer = ani.FFMpegWriter(bitrate=5000, fps=int(fps))
+        anim.save(dir + "/" + filename, writer=writer)
+        print(f"saving animation to {dir}/{filename}")
