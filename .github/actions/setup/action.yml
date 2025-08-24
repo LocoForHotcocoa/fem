@@ -5,3 +5,6 @@ runs:
   steps:
     - name: install uv
       uses: "astral-sh/setup-uv@v6"
+    - name: install Python dependencies
+      run: uv sync --extra dev
+      shell: bash
