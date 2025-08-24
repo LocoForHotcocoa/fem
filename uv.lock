@@ -297,8 +297,8 @@ wheels = [
 ]
 
 [[package]]
-name = "fem"
-version = "0.1.0"
+name = "fem-sim"
+version = "0.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "matplotlib" },
@@ -313,11 +313,6 @@ dependencies = [
 [package.optional-dependencies]
 dev = [
     { name = "commitizen" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "commitizen" },
     { name = "mypy" },
     { name = "ruff" },
 ]
@@ -327,19 +322,14 @@ requires-dist = [
     { name = "commitizen", marker = "extra == 'dev'", specifier = ">=4.8.3" },
     { name = "matplotlib", specifier = ">=3.10.0,<4.0.0" },
     { name = "meshpy", specifier = ">=2022.1.3,<2023.0.0" },
+    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.17.1" },
     { name = "numexpr", specifier = ">=2.10.2,<3.0.0" },
     { name = "numpy", specifier = ">=2.2.2,<3.0.0" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.12.9" },
     { name = "typer", specifier = ">=0.15.2,<0.16.0" },
     { name = "typing-extensions", specifier = ">=4.12.2,<5.0.0" },
 ]
 provides-extras = ["dev"]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "commitizen", specifier = ">=4.8.3" },
-    { name = "mypy", specifier = ">=1.17.1" },
-    { name = "ruff", specifier = ">=0.12.9" },
-]
 
 [[package]]
 name = "fonttools"
