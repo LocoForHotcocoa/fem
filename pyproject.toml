@@ -3,9 +3,14 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "fem"
+name = "fem-sim"
 version = "0.2.0"
 description = "wave equation using FEM"
+license = "MIT"
+license-files = [
+    "LICENSE",
+    "licenses/*.md",
+]
 authors = [
     {name = "Matthew Bradley",email = "matthewbradley2002@gmail.com"}
 ]
