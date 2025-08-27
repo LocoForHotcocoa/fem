@@ -1,6 +1,6 @@
 import numpy as np
 import numpy.linalg as lin
-import meshpy.triangle as triangle # type: ignore
+from meshpy import triangle # type: ignore
 import math
 import pathlib
 
