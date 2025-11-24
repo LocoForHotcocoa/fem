@@ -212,6 +212,7 @@ def animate_on_circle(
             S[i, :] = 0
             T[i, i] = 1
 
+    # --- Solving Time ---
     # We need to isolate acceleration {u_tt}. 
     # To move [T] to the right side, we multiply by its inverse [T_inv].
     # Equation becomes: {u_tt} = -c^2 * [T_inv] * [S] * {u}
@@ -263,7 +264,7 @@ def animate_on_circle(
     data[0, :] = u.copy()
     frame_idx = 1
 
-    # iterate while 
+    # iterate through time steps
     for i in range(1, iterations + 1):
 
         # calculate next iteration
