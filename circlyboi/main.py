@@ -4,6 +4,7 @@ from .FEM_linear import animate_on_line
 
 import typer
 from typing_extensions import Annotated
+import pathlib
 
 app = typer.Typer()
 
@@ -21,7 +22,7 @@ c_op = Annotated[float, typer.Option(help="speed of sound on membrane")]
 dt_op = Annotated[float, typer.Option(help="time step in seconds between FEM frames")]
 
 
-dir_op = Annotated[str, typer.Option(help="directory to store animations")]
+dir_op = Annotated[pathlib.Path, typer.Option(help="directory to store animations")]
 render_op = Annotated[
     bool,
     typer.Option(
@@ -39,7 +40,7 @@ def circle(
     iterations: it_op = 20000,
     speed: c_op = 1.5,
     dt: dt_op = 0.001,
-    dir: dir_op = "animations",
+    dir: dir_op = pathlib.Path("animations"),
     show: render_op = True,
 ):
     try:
@@ -58,7 +59,7 @@ def line(
     iterations: it_op = 10000,
     speed: c_op = 0.25,
     dt: dt_op = 0.001,
-    dir: dir_op = "animations",
+    dir: dir_op = pathlib.Path("animations"),
     show: render_op = True,
 ):
     try:

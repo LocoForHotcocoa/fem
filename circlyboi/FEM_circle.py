@@ -55,7 +55,7 @@ def animate_on_circle(
     c: float,
     num_triangles: int,
     dt: float,
-    dir: str,
+    save_dir: pathlib.Path,
     show: bool,
     func: Callable[[np.ndarray, np.ndarray], np.ndarray],
 ) -> None:
@@ -310,7 +310,6 @@ def animate_on_circle(
         plt.show()
 
     else:
-        save_dir = pathlib.Path(dir)
         save_dir.mkdir(exist_ok=True)
 
         writer = ani.FFMpegWriter(bitrate=5000, fps=int(fps))

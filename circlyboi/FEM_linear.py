@@ -13,7 +13,7 @@ def animate_on_line(
     c: float,
     num_elements: int,
     dt: float,
-    dir: str,
+    save_dir: pathlib.Path,
     show: bool,
     func: Callable[[np.ndarray], np.ndarray],
 ) -> None:
@@ -191,7 +191,6 @@ def animate_on_line(
         plt.show()
 
     else:
-        save_dir = pathlib.Path(dir)
         save_dir.mkdir(exist_ok=True)
 
         writer = ani.FFMpegWriter(bitrate=5000, fps=int(fps))
