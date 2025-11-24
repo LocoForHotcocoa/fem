@@ -19,6 +19,8 @@ def create_mesh(num_triangles: int) -> triangle.MeshInfo:
     `numBoundaryPoints = int(2 * np.sqrt(num_triangles))`
 
     TODO: figure out a better way to estimate `numBoundaryPoints`, `max_volume`, and `min_angle`.
+            - could also just use a mesh_size or something that is more helpful in generation
+    also TODO: figure out if there is a better mesh library for this
     """
 
     def round_trip_connect(start, end):
