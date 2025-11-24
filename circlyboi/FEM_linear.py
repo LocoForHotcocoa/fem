@@ -2,12 +2,21 @@ import numpy as np
 import numpy.linalg as lin
 import math
 import pathlib
+from typing import Callable
 
 import matplotlib.pyplot as plt
 import matplotlib.animation as ani
 
-def animate_on_line(iterations: int, c: float, num_elements: int, dt: float, dir: str, show: bool, func) -> None:
 
+def animate_on_line(
+    iterations: int,
+    c: float,
+    num_elements: int,
+    dt: float,
+    save_dir: pathlib.Path,
+    show: bool,
+    func: Callable[[np.ndarray], np.ndarray],
+) -> None:
     # Amount of elements
     N = num_elements
 
@@ -15,7 +24,9 @@ def animate_on_line(iterations: int, c: float, num_elements: int, dt: float, dir
     n = N + 1
 
     # Element size
-    h = 1.0/N
+    h = 1.0 / N
+
+    xs = np.linspace(0, 1, n)
 
     """    
     calculating FPS and skipped frames:
@@ -40,21 +51,21 @@ def animate_on_line(iterations: int, c: float, num_elements: int, dt: float, dir
     """
 
     fps_target = 30
-    step_size = math.ceil(1.0/(dt*fps_target))
-    fps = 1.0/(dt*step_size)
+    step_size = math.ceil(1.0 / (dt * fps_target))
+    fps = 1.0 / (dt * step_size)
 
     num_frames = math.floor(iterations / step_size)
     total_time = num_frames / fps
-    print(f'total time is: {total_time:.2f} seconds')
+    print(f"total time is: {total_time:.2f} seconds")
     # filename to save animation
-    filename = f'FEM_linear_{num_elements}_i_{iterations}_dt_{dt}_c_{c}.mp4' # animation file name
+    filename = f"FEM_linear_{num_elements}_i_{iterations}_dt_{dt}_c_{c}.mp4"  # animation file name
 
     ## NOTICE ---------------------------------------------------------------------------------- ##
-    
+
     # much if the math is taken from the paper:
     #     - https://studenttheses.uu.nl/bitstream/handle/20.500.12932/29861/thesis.pdf?sequence=2
-    # and much of the code in this section is taken from (or at the very least inspired by) 
-    # this repository: 
+    # and much of the code in this section is taken from (or at the very least inspired by)
+    # this repository:
     #     - https://github.com/jeverink/BachelorsThesis/
     # The original MIT license applies to this code
 
@@ -80,78 +91,98 @@ def animate_on_line(iterations: int, c: float, num_elements: int, dt: float, dir
 
     ## Math ------------------------------------------------------------------------------------ ##
 
-    # Time coefficient matrix
-    T = np.zeros((n, n))
+    print("populating matrices...\n")
+    # --- Creating Time and Space matrices ---
+    # since T & S are diagonal matrices, I am constructing them using np.diag
+    # Construct T matrix
+    # Create arrays for the diagonal values
+    main_T = np.full(n, (2.0 / 3.0) * h)
+    off_T = np.full(n - 1, (1.0 / 6.0) * h)
 
-    T[0, 0] = 1 # Left boundary
-    T[N, N] = 1 # Right boundary
+    # Construct the matrix by summing diagonals
+    # k=0 is main, k=1 is upper, k=-1 is lower
+    T = np.diag(main_T, k=0) + np.diag(off_T, k=1) + np.diag(off_T, k=-1)
 
-    for i in range(1, N):
-        for j in range(0, N+1):
-            if(i==j):
-                T[i, j] = (2.0/3.0)*h
-            if(abs(i-j) == 1):
-                T[i, j] = (1.0/6.0)*h
+    # Construct S Matrix
+    main_S = np.full(n, 2.0 / h)
+    off_S = np.full(n - 1, -1.0 / h)
 
-    # Space coefficient matrix
-    S = np.zeros((n, n))
+    S = np.diag(main_S, k=0) + np.diag(off_S, k=1) + np.diag(off_S, k=-1)
 
-    for i in range(1, N):
-        for j in range(0, N+1):
-            if(i==j):
-                S[i, j] = (2.0/h)
-            if(abs(i-j)== 1):
-                S[i, j] = -(1.0/h)
+    # Apply Boundary Conditions
+    T[0, 0] = 1.0
+    T[N, N] = 1.0
 
+    # --- Solving Time ---
+    # Equation becomes: {u_tt} = -c^2 * [T_inv] * [S] * {u}
+    # M = -c^2 * [T_inv] * [S]
+
+    T_inv = lin.inv(T)
+    M = -c * c * (T_inv @ S)
 
     # A single time step from U(t) -> U(t+dt) and U'(t) -> U'(t+dt)
-    def iteration(v, vDer):
-        vNew = v + dt*vDer
-        q = -c*c*S@v
-        r = lin.solve(T, q)
-        vDerNew = vDer + dt*r
-        return (vNew, vDerNew)
+    # (Euler's method)
+    def iteration(u, uDer):
+        # 1. calculate acceleration: a = M * u
+        acc = M @ u
 
-    # The real solution
-    # def realU(x, t):
-    #     return np.cos(2*np.pi*t)*np.sin(2*np.pi*x)
+        # 2. update position (u)
+        uNew = u + dt * uDer
+
+        # 3. update velocity (uDer)
+        uDerNew = uDer + dt * acc
+
+        return uNew, uDerNew
 
     # The initial value of the finite element problem
-    u = np.zeros((n, 1))
-    uDer = np.zeros((n, 1))
+    u = np.zeros(n)
+    uDer = np.zeros(n)
 
-    # use user defined function
-    for i in range(0, n):
-        x = i*h
-        u[i] = func(x)
-        
+    u_temp = func(xs)
+    u[:] = u_temp[:]
+
+    # BC (0 on endpoints)
+    u[0] = 0.0
+    u[-1] = 0.0
 
     # calculating all values
-    data = []
-    data.append(u)
-    # a = 0
-    for i in range(0, iterations):
-        (uNew, uDerNew) = iteration(u, uDer)
-        u = uNew
-        uDer = uDerNew
-        if i % step_size == 0:
-            data.append(u)
+    print("iterating FEM...\n")
 
-    spacing = np.linspace(0.0, 1.0, n) # for FEM solution
+    data = np.empty((num_frames, n))
+    data[0, :] = u.copy()
+    frame_idx = 1
+
+    # iterate through time steps
+    for i in range(1, iterations + 1):
+        u, uDer = iteration(u, uDer)
+        # set BC every time, in case of floating point errors
+        u[0] = u[-1] = 0.0
+        uDer[0] = uDer[-1] = 0.0
+
+        if i % step_size == 0:
+            if frame_idx < num_frames:
+                data[frame_idx, :] = u.copy()
+                frame_idx += 1
 
     ## animation ------------------------------------------------------------------------------- ##
 
+    print("plotting solution...\n")
     # First set up the figure, the axis, and the plot element we want to animate
     fig = plt.figure()
-    ax = plt.axes(xlim=(0, 1), ylim=(-1.7, 1.7))
-    line, = ax.plot([], [], lw=2)
+    ax = plt.axes(xlim=(0, 1), ylim=(-1.7, 1.7))  # ylim is arbritrary
+    (line,) = ax.plot([], [], lw=2)
 
     # animation function.  This is called sequentially
     def animate(i):
-        line.set_data(spacing, data[i])
+        line.set_data(xs, data[i])
 
     # call the animator.  blit=True means only re-draw the parts that have changed.
-    anim = ani.FuncAnimation(fig, animate, frames=num_frames, interval=(1.0/fps)*1000)
+    anim = ani.FuncAnimation(
+        fig,
+        animate,  # type: ignore
+        frames=num_frames,
+        interval=(1.0 / fps) * 1000,
+    )
     # print(iterations)
     # print(len(data))
     # print(a)
@@ -160,10 +191,8 @@ def animate_on_line(iterations: int, c: float, num_elements: int, dt: float, dir
         plt.show()
 
     else:
-        save_dir = pathlib.Path(dir)
         save_dir.mkdir(exist_ok=True)
-        
-        writer=ani.FFMpegWriter(bitrate=5000, fps=int(fps))
-        anim.save(dir + '/' + filename, writer=writer)
-        print(f'saving animation to {dir}/{filename}')
 
+        writer = ani.FFMpegWriter(bitrate=5000, fps=int(fps))
+        anim.save(save_dir / filename, writer=writer)
+        print(f"saving animation to {dir}/{filename}")
