@@ -146,15 +146,19 @@ def animate_on_circle(
     #
     #	integral of (phi_i * phi_j * dA)
     #	gives us A[i,j]:
-    A = [[1/12 , -1/24, -1/24],
-        [-1/24, 1/4  , 1/8  ],
-        [-1/24, 1/8  , 1/12]]
+    A = np.array(
+        [[1/12 , -1/24, -1/24],
+         [-1/24, 1/4  , 1/8  ],
+         [-1/24, 1/8  , 1/12 ]]
+    )
     
     # 	and integral of (np.dot(grad(phi_i), grad(phi_j)) * dA)
     #	gives us Ad[i,j]:
-    Ad = [[1   , -1/2, -1/2],
+    Ad = np.array(
+        [[1   , -1/2, -1/2],
          [-1/2, 1/2 , 0   ],
          [-1/2, 0   , 1/2 ]]
+    )
     # to transform any element into the canonical element, we need this:
     # J = (x2 - x1)(y3 - y1) - (x3 - x1)(y2 - y1)
     # this is discussed further in the referenced paper
@@ -191,10 +195,12 @@ def animate_on_circle(
 
         # now cycle through each (i,j) pair in A, Ad 
         # to update T, S with the specific J for the current element
-        for i in range(0, 3):
-            for j in range(0, 3):
-                T[inds[i], inds[j]] += J*A[i][j]
-                S[inds[i], inds[j]] += J*Ad[i][j]
+        local_T = J * A
+        local_S = J * Ad
+
+        grid = np.ix_(inds, inds)
+        T[grid] += local_T
+        S[grid] += local_S
 
 
     # boundary condition:
@@ -202,20 +208,37 @@ def animate_on_circle(
     # then set S[i:] = 0, T[i:] = 0, T[i,i] = 1
     for i in range(0, n):
         if(bs[i]):
-            for j in range(0, n):
-                S[i,j] = 0
-                if(i == j):
-                    T[i, j] = 1
-                else:
-                    T[i, j] = 0
+            T[i, :] = 0
+            S[i, :] = 0
+            T[i, i] = 1
 
-    # iterate through time using first order approximation
-    def iteration(v, vDer):
-        vNew = v + dt*vDer
-        q = -c*c*S@v
-        r = lin.solve(T, q)
-        vDerNew = vDer + dt*r
-        return vNew, vDerNew
+    # We need to isolate acceleration {u_tt}. 
+    # To move [T] to the right side, we multiply by its inverse [T_inv].
+    # Equation becomes: {u_tt} = -c^2 * [T_inv] * [S] * {u}
+    T_inv = lin.inv(T) 
+    
+    # Now compute the M Matrix (The "Evolution Matrix")
+    # Since c, T_inv, and S are all CONSTANTS (the mesh doesn't change shape),
+    # we can bake them all into a single matrix M.
+    #
+    # M = -c^2 * [T_inv] * [S]
+    #
+    # Now, our loop becomes a simple matrix multiplication: 
+    # acceleration = M @ u
+    M = -c*c * (T_inv @ S)
+
+    # calculate next iteration using Euler's method
+    def iteration(u, uDer):
+        # 1. calculate acceleration: a = M * u
+        acc = M @ u
+
+        # 2. update position (u)
+        uNew = u + dt * uDer
+
+        # 3. update velocity (uDer)
+        uDerNew = uDer + dt * acc
+
+        return uNew, uDerNew
 
     u = np.zeros(n)
     uDer = np.zeros(n)
@@ -225,12 +248,10 @@ def animate_on_circle(
 
     # calculate all values at once using numpy
     u_temp = func(xs, ys)
+    u[:] = u_temp[:]
     
     # apply conditional logic with boundary points
     u[bs] = 0.0
-
-    # fill in the rest from our calculated u_temp
-    u[~bs] = u_temp[~bs]
 
     # set uDer to 0
     uDer[:] = 0.0
@@ -242,9 +263,17 @@ def animate_on_circle(
     data[0, :] = u.copy()
     frame_idx = 1
 
+    # iterate while 
     for i in range(1, iterations + 1):
+
+        # calculate next iteration
         u, uDer = iteration(u, uDer)
 
+        # gemini says to enforce BC again, just in case of floating point errors
+        u[bs] = 0.0
+        uDer[bs] = 0.0
+
+        # only add this to animation data to each frame
         if i % step_size == 0:
             if frame_idx < num_frames:
                 data[frame_idx, :] = u.copy()
