@@ -153,6 +153,7 @@ def animate_on_circle(
     #
     # integral of (phi_i * phi_j * dA)
     # gives us A[i,j]:
+    # fmt: off
     A = np.array(
         [[1/12 , -1/24, -1/24],
          [-1/24, 1/4  , 1/8  ],
@@ -166,6 +167,7 @@ def animate_on_circle(
          [-1/2, 1/2 , 0   ],
          [-1/2, 0   , 1/2 ]]
     )
+    # fmt: on
     # to transform any element into the canonical element, we need this:
     # J = (x2 - x1)(y3 - y1) - (x3 - x1)(y2 - y1)
     # this is discussed further in the referenced paper
@@ -197,8 +199,11 @@ def animate_on_circle(
 
         inds = [ind1, ind2, ind3]
         # calculate J for this specific triangle
-        J = ((xs[ind2] - xs[ind1]) * (ys[ind3] - ys[ind1])) - \
-            ((xs[ind3] - xs[ind1]) * (ys[ind2] - ys[ind1]))
+        # fmt: on
+        J = ((xs[ind2] - xs[ind1]) * (ys[ind3] - ys[ind1])) - (
+            (xs[ind3] - xs[ind1]) * (ys[ind2] - ys[ind1])
+        )
+        # fmt: off
 
         # now cycle through each (i,j) pair in A, Ad
         # to update T, S with the specific J for the current element
