@@ -7,63 +7,67 @@ This is the best I could get from the internet. There were other options but the
 will add more to safe_locals here when needed.
 """
 
-class InvalidBoundary(Exception):
-    """Custom exception to indicate an error in evaluating the function."""
-    def __init__(self):
-        super().__init__('invalid boundary condition')
-
 safe_locals = {
-    "e": np.e, "pi": np.pi
+    "e": np.e, 
+    "pi": np.pi,
 }
 
-def is_zero_on_boundary(func) -> bool:
-    for theta in np.linspace(0, 2*np.pi, 100):
-        x = np.cos(theta)
-        y = np.sin(theta)
-        result = func(x, y)
-        
-        if not np.isclose(result, 0, atol=1e-6):  # Check if the result is close to zero
-            print(f"Function did not evaluate to zero at theta = {theta:.3f} (x = {x:.3f}, y = {y:.3f}, result = {result})")
-            return False # If any point on the unit circle is not zero, return False
-        
-    return True  # If all points on the circle are zero, return True
-
-def parse_circle_func(raw_func: str) -> Callable[[float, float], float]:
+def parse_circle_func(raw_func: str) -> Callable[[np.ndarray, np.ndarray], np.ndarray]:
+    """
+    Parse 2D function from user using numexpr and numpy. 
+    
+    To optimize for my usecase (triangles), input shape == output shape (i.e. `x[1], y[1] -> u[1]`).
+    """
     try:
-        def func(x: float, y: float) -> float:
-            return ne.evaluate(raw_func, local_dict={**safe_locals, "x": x, "y": y})
-        func(0,0) # test validity of function (check for syntax errors, etc.)
-        # if not is_zero_on_boundary(func): # test if zero on boundary
-        #     raise InvalidBoundary
+        def func(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+            return ne.evaluate(
+                raw_func,
+                local_dict={**safe_locals, "x" : x, "y" : y},
+                out=np.empty_like(x)
+            )
+        
+        dummy_x = np.array([0.0])
+        dummy_y = np.array([0.0])
+        func(dummy_x, dummy_y)
+
         return func
-    except Exception as e:
-        print(f'exception raised: {e}')
+    except (NameError, TypeError, ValueError, ZeroDivisionError) as e:
+        print(f'function syntax error or invalid variable: {e}')
         print('function is not valid, please try again.')
         raise e
 
-
-def parse_line_func(raw_func: str) -> Callable[[float], float]:
+def parse_line_func(raw_func: str) -> Callable[[np.ndarray], np.ndarray]:
+    """
+    Parse 1D function from user using numexpr and numpy.
+    """
     try:
-        def func(x: float) -> float:
-            return ne.evaluate(raw_func, local_dict={**safe_locals, "x":x})
-        
-        func(0)
+        def func(x: np.ndarray) -> np.ndarray:
+            return ne.evaluate(
+                raw_func,
+                local_dict={**safe_locals, "x" : x},
+                out=np.empty_like(x)
+            )
+        dummy_x = np.array([0.0])
+        func(dummy_x)
+
         return func
-    except Exception as e:
-        print(f'exception raised: {e}')
+    except (NameError, TypeError, ValueError, ZeroDivisionError) as e:
+        print(f'function syntax error or invalid variable: {e}')
         print('function is not valid, please try again.')
         raise e
-
 
 if __name__=='__main__':
+    x_dummy = np.array([2.0])
+    y_dummy = np.array([1.0])
+
     while True:
         raw_func = input('please enter a function of x and y:\n')
         circle_func = parse_circle_func(raw_func)
         if circle_func is not None:
-            print(circle_func(1,1))
+            print(circle_func(x_dummy, y_dummy))
         
         raw_func = input('please enter a function of x:\n')
         line_func = parse_line_func(raw_func)
         if line_func is not None:
-            print(line_func(1))
+            print(line_func(x_dummy))
 

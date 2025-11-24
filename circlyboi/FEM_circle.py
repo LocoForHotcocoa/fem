@@ -3,7 +3,9 @@ import numpy.linalg as lin
 import meshpy.triangle as triangle # type: ignore
 import math
 import pathlib
+from typing import Callable
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.animation as ani
 
@@ -43,13 +45,18 @@ def create_mesh(num_triangles: int) -> triangle.MeshInfo:
 
     return mesh
 
-def animate_on_circle(iterations: int, c: float, num_triangles: int, dt: float, dir: str, show: bool, func) -> None:
+def animate_on_circle(
+        iterations: int, 
+        c: float, 
+        num_triangles: int, 
+        dt: float, 
+        dir: str, 
+        show: bool, 
+        func: Callable[[np.ndarray, np.ndarray], np.ndarray]
+) -> None:
     """
     creates animation from initial function (func) and a whole bunch of other parameters
-    """
 
-
-    """    
     calculating FPS and skipped frames:
     - dt (float): ∆t between iterations in FEM
     - step_size (int): how many iterations of FEM per frame in animation
@@ -60,15 +67,14 @@ def animate_on_circle(iterations: int, c: float, num_triangles: int, dt: float, 
     actual fps will most likely be slightly higher because dealing with integer step_size but thats ok.
 
     example:
-    ```
-    dt = 0.01
-    step_size = math.ceil(1.0/(dt*fps_target)) = 1/(0.01*30) = 4
-    fps = 1/(0.01*3) = 25
-    ```
+    >>> dt = 0.01
+    >>> step_size = math.ceil(1.0/(dt*fps_target)) = 1/(0.01*30) = 4
+    >>> fps = 1/(0.01*3) = 25
 
     how long will video be? how many frames?
-    num_frames = math.floor(iterations / step_size) -- get rid of the last frame to avoid out of bounds
-    total_time = num_frames / fps
+
+    >>> num_frames = math.floor(iterations / step_size) # get rid of the last frame to avoid out of bounds
+    >>> total_time = num_frames / fps
     """
 
     fps_target = 30
@@ -94,7 +100,7 @@ def animate_on_circle(iterations: int, c: float, num_triangles: int, dt: float, 
     ys = vertices[:,1]
 
     # extract boundary point information. for each vertex, 0 = inside, 1 = on boundary
-    bs = np.array(mesh.point_markers)
+    bs = np.array(mesh.point_markers, dtype=bool)
 
     ## NOTICE ---------------------------------------------------------------------------------- ##
     
@@ -209,33 +215,40 @@ def animate_on_circle(iterations: int, c: float, num_triangles: int, dt: float, 
         q = -c*c*S@v
         r = lin.solve(T, q)
         vDerNew = vDer + dt*r
-        return (vNew, vDerNew)
+        return vNew, vDerNew
 
-    u = np.zeros((n, 1))
-    uDer = np.zeros((n, 1))
+    u = np.zeros(n)
+    uDer = np.zeros(n)
 
     # filling in initial data for each element, 
     # making sure that u[boundary] == 0.
-    for i in range(0, n):
-        if(not bs[i]):
-            u[i] = func(xs[i], ys[i])
-        else:
-            u[i] = 0
-        uDer[i] = 0
-        
+
+    # calculate all values at once using numpy
+    u_temp = func(xs, ys)
+    
+    # apply conditional logic with boundary points
+    u[bs] = 0.0
+
+    # fill in the rest from our calculated u_temp
+    u[~bs] = u_temp[~bs]
+
+    # set uDer to 0
+    uDer[:] = 0.0
+
     # iteration
     print('iterating FEM...\n')
 
-    data = []
-    data.append(u)
+    data = np.empty((num_frames, n))
+    data[0, :] = u.copy()
+    frame_idx = 1
 
-    # populating data for entire timespan of simulation
-    for i in range(0, iterations):
-        (uNew, uDerNew) = iteration(u, uDer)
-        u = uNew
-        uDer = uDerNew
+    for i in range(1, iterations + 1):
+        u, uDer = iteration(u, uDer)
+
         if i % step_size == 0:
-            data.append(u)
+            if frame_idx < num_frames:
+                data[frame_idx, :] = u.copy()
+                frame_idx += 1
 
     print('plotting solution...\n')
     fig = plt.figure()
@@ -249,10 +262,14 @@ def animate_on_circle(iterations: int, c: float, num_triangles: int, dt: float, 
         ax.set_xlabel("x")
         ax.set_ylabel("y")
         ax.set_zlabel("u")
-        z = [val[0] for val in data[i]]
-        ax.plot_trisurf(xs, ys, z, triangles=triangles, cmap=plt.cm.YlGnBu_r)
+        ax.plot_trisurf(xs, ys, data[i, :], triangles=triangles, cmap=mpl.colormaps['YlGnBu_r'])
 
-    anim = ani.FuncAnimation(fig, animate, frames=num_frames, interval=(1.0/fps)*1000)
+    anim = ani.FuncAnimation(
+        fig, 
+        animate, # type: ignore
+        frames=num_frames, 
+        interval=(1.0/fps)*1000
+    )
     
     if show:
         plt.show()

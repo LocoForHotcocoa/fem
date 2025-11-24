@@ -30,8 +30,8 @@ def circle(func: arb_circle_func = 'e - exp(x**2 + y**2)',
     
     try:
         user_func = parse_circle_func(func)
-    except Exception:
-        raise typer.Exit(1)
+    except (NameError, TypeError, ValueError, ZeroDivisionError) as e:
+        raise typer.Exit(1) from e
     
     print('all working good')
     animate_on_circle(iterations, speed, num_elements, dt, dir, show, user_func)
@@ -44,8 +44,8 @@ def line(func: arb_line_func = 'sin(2*pi*x)',
     
     try:
         user_func = parse_line_func(func)
-    except Exception:
-        raise typer.Exit(1)
+    except (NameError, TypeError, ValueError, ZeroDivisionError) as e:
+        raise typer.Exit(1) from e
     
     print('all working good')
     animate_on_line(iterations, speed, num_elements, dt, dir, show, user_func)
