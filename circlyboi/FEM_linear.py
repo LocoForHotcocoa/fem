@@ -195,5 +195,5 @@ def animate_on_line(
         save_dir.mkdir(exist_ok=True)
 
         writer = ani.FFMpegWriter(bitrate=5000, fps=int(fps))
-        anim.save(dir + "/" + filename, writer=writer)
+        anim.save(save_dir / filename, writer=writer)
         print(f"saving animation to {dir}/{filename}")
