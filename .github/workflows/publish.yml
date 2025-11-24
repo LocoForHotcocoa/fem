@@ -2,30 +2,36 @@ name: publish to PyPI
 
 on:
   workflow_run:
-    workflows: ["Python Code Quality"]   # must match the 'name:' in code-quality.yml
+    workflows: ["Python Code Quality"]
     types: [completed]
 
 jobs:
   publish-to-pypi:
-    # only run if the triggering run succeeded AND it was a tag push like v1.2.3
+    runs-on: ubuntu-latest
+    
+    # Fix: Check 'head_branch' for the tag name (e.g. 'v1.0.0')
     if: >
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.event == 'push' &&
-      startsWith(github.event.workflow_run.ref, 'refs/tags/v')
+      startsWith(github.event.workflow_run.head_branch, 'v')
 
-    runs-on: ubuntu-latest
     permissions:
-      id-token: write
+      id-token: write  # REQUIRED for Trusted Publishing
       contents: read
 
     steps:
       - uses: actions/checkout@v4
         with:
-          # build the exact commit that the quality workflow ran on
+          # REQUIRED: Checkout the specific commit that triggered the previous workflow
           ref: ${{ github.event.workflow_run.head_sha }}
 
       - uses: ./.github/actions/setup
-      - run: uv build
-      - run: ls -lah dist
+
+      - name: Build package
+        run: uv build
+
+      - name: Verify build artifacts
+        run: ls -lah dist
+
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
