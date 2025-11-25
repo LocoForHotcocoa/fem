@@ -1,6 +1,10 @@
 # FEM (Finite Element Method)
 <img src="assets/example.gif"/>
 
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/LocoForHotcocoa/fem/ci-cd.yml)
+<br>
+![PyPI - Version](https://img.shields.io/pypi/v/fem-sim)
+
 Python CLI application to calculate and animate waves in 1D and 2D, using the weak formulation of the wave equation and the finite element method to numerically calculate the solution for any user-defined continuous function where $f(R) = 0$.
 
 reference paper:
@@ -11,6 +15,18 @@ reference paper:
 - *python 3.10 or higher is required.*
 - *if you want to save animations with `--save` flag, the software **`ffmpeg`** is required and must be in system path.*
     - *if on mac, just download with homebrew: `brew install ffmpeg`*
+
+### Install with PyPi
+- this project is pushed to PyPi under the name `fem-sim` (`fem` was already taken). To install, just run:
+```shell
+# you should create venv first, with whatever method you want
+python3 -m venv .venv
+source .venv/bin/activate
+
+pip install fem-sim
+```
+
+### Install For Development
 - this project is managed with the [uv](https://docs.astral.sh/uv/guides/install-python/) Python package manager, which is the intended way to install this package.
 1. clone repo:
 ```shell
@@ -24,7 +40,7 @@ cd fem
 uv venv && uv sync
 source .venv/bin/activate
 
-# 2. or with plain pip (still recommended to use a venv to not mess up your local python env)
+# 2. or with plain pip
 python3 -m venv .venv
 source .venv/bin/activate
 pip install .
