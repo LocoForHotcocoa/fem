@@ -1,4 +1,15 @@
-## v0.2.1 (2025-08-24)
+## v0.2.1 (2025-11-24)
+
+### Refactor
+
+- use pathlib.Path instead of str from the start
+- use pathlib instead of string concat
+
+### Perf
+
+- update FEM_linear with similar logic from circle solution
+- calculate static inverse matrix before iteration, instead of during
+- calculate arbritrary function for the entire mesh at the same time using np.ndarray
 
 ## v0.2.0 (2025-08-18)
 
