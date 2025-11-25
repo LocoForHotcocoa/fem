@@ -297,7 +297,7 @@ wheels = [
 ]
 
 [[package]]
-name = "fem"
+name = "fem-sim"
 version = "0.2.0"
 source = { editable = "." }
 dependencies = [
