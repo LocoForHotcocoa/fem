@@ -63,13 +63,13 @@ fem circle 'cos(3*arctan2(y,x))*sin(pi*sqrt(x**2+y**2))' --num-elements 500 --sp
 
 ## File Structure
 ```
-circlyboi
+circlyboi/
 ├── __init__.py
-├── FEM_circle.py
-├── FEM_linear.py
-├── main.py
-└── parse_func.py
+├── fem.py          # orchestrator functions for 1D and 2D problems
+├── main.py         # CLI using typer
+├── mesh_utils.py   # mesh generation for 2D circle case
+├── parse_func.py   # parses user-defined strings into functions, for use in the CLI
+├── plotting.py     # classes for plotting in 1D and 2D
+├── problems.py     # 1D and 2D wave equation FEM solutions (will add more problems later)
+└── solver.py       # generic n-dimensional simulation engine
 ```
-
-*TODO*: 
-- figure out a way to separate wave calc logic and plotting logic into different files

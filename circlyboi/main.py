@@ -1,10 +1,10 @@
-from .parse_func import parse_line_func, parse_circle_func
-from .FEM_circle import animate_on_circle
-from .FEM_linear import animate_on_line
-
 import typer
 from typing_extensions import Annotated
 import pathlib
+
+from .fem import fem_line, fem_circle
+from .parse_func import parse_line_func, parse_circle_func
+
 
 app = typer.Typer()
 
@@ -49,7 +49,7 @@ def circle(
         raise typer.Exit(1) from e
 
     print("all working good")
-    animate_on_circle(iterations, speed, num_elements, dt, dir, show, user_func)
+    fem_circle(user_func, num_elements, iterations, speed, dt, dir, show)
 
 
 @app.command()
@@ -68,4 +68,4 @@ def line(
         raise typer.Exit(1) from e
 
     print("all working good")
-    animate_on_line(iterations, speed, num_elements, dt, dir, show, user_func)
+    fem_line(user_func, num_elements, iterations, speed, dt, dir, show)
