@@ -1,5 +1,5 @@
 import numpy as np
-import meshpy.triangle as triangle
+import meshpy.triangle as triangle  # type: ignore
 from dataclasses import dataclass
 
 
