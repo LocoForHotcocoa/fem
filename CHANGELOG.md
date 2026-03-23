@@ -1,3 +1,9 @@
+## v0.3.0 (2026-03-23)
+
+### Refactor
+
+- split up into logical modules for expandability
+
 ## v0.2.1 (2025-11-24)
 
 ### Refactor
