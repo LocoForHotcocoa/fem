@@ -13,7 +13,7 @@ class Problem1D:
         # boundary mask: first and last node
         self.mask = np.zeros(n, dtype=bool)
         self.mask[0] = self.mask[-1] = True
-    
+
     def assemble_matrices(self) -> np.ndarray:
         """Creates Time and Space matrices."""
         h = self.h
@@ -40,7 +40,7 @@ class Problem1D:
         # --- Solving Time ---
         # Equation becomes: {u_tt} = -c^2 * [T_inv] * [S] * {u}
         # M = -c^2 * [T_inv] * [S]
-        return -self.c**2 * (lin.inv(T) @ S)
+        return -(self.c**2) * (lin.inv(T) @ S)
 
 
 class Problem2D:
@@ -135,5 +135,5 @@ class Problem2D:
                 T[i, :] = 0
                 S[i, :] = 0
                 T[i, i] = 1
-        
-        return -self.c**2 * (lin.inv(T) @ S)
+
+        return -(self.c**2) * (lin.inv(T) @ S)

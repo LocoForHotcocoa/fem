@@ -31,38 +31,40 @@ def fem_circle(
     # 2. Setup Geometry & Math
     logger.debug("Generating Mesh...")
     mesh = create_mesh(num_triangles)
-    
+
     logger.debug("Assembling FEM Matrices...")
     problem = Problem2D(mesh=mesh, c=c)
     M = problem.assemble_matrices()
-    
+
     # 3. Initialize the Engine
     engine = WaveEngine(M=M, dt=dt, boundary_mask=problem.mask)
 
     # 4. Define Initial Conditions
     # Apply the specified function to the mesh's x and y coordinates
     u_start = func(mesh.xs, mesh.ys)
-    
+
     # Ensure the boundary starts exactly at 0
     u_start[problem.mask] = 0.0
 
     # 5. Run Simulation
     logger.debug(f"Running {iterations} iterations...")
-    data = engine.run_simulation(u_start=u_start, iterations=iterations, step_size=step_size)
+    data = engine.run_simulation(
+        u_start=u_start, iterations=iterations, step_size=step_size
+    )
 
     # 6. Visualize
     logger.debug("Rendering Animation...")
     vis = Visualizer2D(mesh=mesh)
-    
+
     def animate_frame(i):
         return vis.update(data[i])
 
     anim = ani.FuncAnimation(
         vis.fig,
-        animate_frame, # type: ignore
+        animate_frame,  # type: ignore
         frames=len(data),
         interval=(1.0 / FPS_TARGET) * 1000,
-        blit=False
+        blit=False,
     )
     if show:
         plt.show()
@@ -92,39 +94,40 @@ def fem_line(
     # Calculate how many physics steps happen per animation frame
     step_size = max(1, int(1.0 / (dt * FPS_TARGET)))
 
-    
     logger.debug("Assembling FEM Matrices...")
     problem = Problem1D(n=num_elements, c=c)
     M = problem.assemble_matrices()
-    
+
     # 3. Initialize the Engine
     engine = WaveEngine(M=M, dt=dt, boundary_mask=problem.mask)
 
     # 4. Define Initial Conditions
     # Apply the specified function to the mesh's x and y coordinates
     u_start = func(problem.xs)
-    
+
     # Ensure the boundary starts exactly at 0
     u_start[problem.mask] = 0.0
 
     # 5. Run Simulation
     logger.debug(f"Running {iterations} iterations...")
-    data = engine.run_simulation(u_start=u_start, iterations=iterations, step_size=step_size)
+    data = engine.run_simulation(
+        u_start=u_start, iterations=iterations, step_size=step_size
+    )
 
     # 6. Visualize
     logger.debug("Rendering Animation...")
     vis = Visualizer1D(xs=problem.xs)
-    
+
     def animate_frame(i):
-        line, = vis.update(data[i])
-        return line,
+        (line,) = vis.update(data[i])
+        return (line,)
 
     anim = ani.FuncAnimation(
         vis.fig,
-        animate_frame, # type: ignore
+        animate_frame,  # type: ignore
         frames=len(data),
         interval=(1.0 / FPS_TARGET) * 1000,
-        blit=True
+        blit=True,
     )
 
     if show:

@@ -10,10 +10,12 @@ class MeshData:
     boundary_markers: np.ndarray
 
     @property
-    def xs(self): return self.vertices[:, 0]
-    
+    def xs(self):
+        return self.vertices[:, 0]
+
     @property
-    def ys(self): return self.vertices[:, 1]
+    def ys(self):
+        return self.vertices[:, 1]
 
 
 # mesh creation
@@ -58,5 +60,5 @@ def create_mesh(num_triangles: int) -> MeshData:
     return MeshData(
         vertices=np.array(mesh.points),
         elements=np.array(mesh.elements),
-        boundary_markers=np.array(mesh.point_markers, dtype=bool)
+        boundary_markers=np.array(mesh.point_markers, dtype=bool),
     )
